@@ -1,0 +1,53 @@
+// this function iterates over all dataSourceTables in a sheet and refreshes each...
+function RefreshAllData() {
+  // open spreadsheet by Id
+  var id = "Enter valid spreadsheet id here";
+  var spreadsheet = SpreadsheetApp.openById(id) // SpreadsheetApp.getActive();
+  // request execution of queries
+  SpreadsheetApp.enableAllDataSourcesExecution();
+  
+  // get all sheets in current spreadsheet and iterate over those
+  var sheetArr = spreadsheet.getSheets();
+  for(var i = 0; i < sheetArr.length; i++){
+    // get datasource tables of current sheet and iterate over those
+    var tables = SpreadsheetApp.setActiveSheet(sheetArr[i]).getDataSourceTables()
+    for(var n = 0; n < tables.length; n++ ){
+      // refresh current data source
+      tables[n].refreshData();
+    }
+    // set timeout for each query and move on to next sheet afterwards
+    tables.forEach(function(dataSourceTable) { dataSourceTable.waitForCompletion(300) });
+  }
+};
+
+
+// get position of last non-empty row in a specific column
+function getLastRowWithValue(sheet, column_index) {
+    var lastRow = sheet.getMaxRows();
+    var values = sheet.getRange(1, column_index, lastRow).getValues();
+
+    for (; values[lastRow - 1] == "" && lastRow > 0; lastRow--) {
+    }
+    return lastRow;
+}
+
+// get position of last non-empty column in specific row
+function getLastColumnWithValue(sheet, row_index) {
+    for (var c = sheet.getLastColumn(); c--; c > 0) {
+        if (sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getCell(row_index, c).getValue() !== "") {
+            return c;
+        }
+    }
+}
+
+// Find the first empty row of a column
+function getFirstEmptyRow(sheet, column_index) {
+    var data = sheet.getDataRange().getValues();
+    for (var n = 0; n < data.length; n++) {
+        if (data[n][column_index - 1] == '') {
+            n++;
+            break
+        }
+    }
+    return n - 1;
+}
