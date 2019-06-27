@@ -31,6 +31,7 @@ function getLastRowWithValue(sheet, column_index) {
     return lastRow;
 }
 
+
 // get position of last non-empty column in specific row
 function getLastColumnWithValue(sheet, row_index) {
     for (var c = sheet.getLastColumn(); c--; c > 0) {
@@ -39,6 +40,7 @@ function getLastColumnWithValue(sheet, row_index) {
         }
     }
 }
+
 
 // Find the first empty row of a column
 function getFirstEmptyRow(sheet, column_index) {
@@ -50,4 +52,20 @@ function getFirstEmptyRow(sheet, column_index) {
         }
     }
     return n - 1;
+}
+
+
+// find a spreadsheet by it's name. Be aware that filenames are not unique on 
+// google drive (fileIDs are!), so this will return the first match as a Spreadsheet object!
+// it will fail, if the object matched is not a google spreadsheet...
+function getSpreadsheetByName(fileNameString) {
+  var fileIterator = DriveApp.getFilesByName(fileNameString);
+  while (fileIterator.hasNext())
+  {
+    var file = fileIterator.next();
+    if (file.getName() == fileNameString)
+    {
+      return SpreadsheetApp.open(file);
+    }    
+  }
 }
