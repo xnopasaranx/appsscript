@@ -58,3 +58,36 @@ function copyFile(originFileId, copyTitle, targetFolderId) {
     );
     return response; // get fileId of new file and other metadata from response body
 }
+
+// teamdrive version
+function copyFile(originFileId, copyTitle, targetFolderId) {
+  var response = Drive.Files.copy({
+    "title": copyTitle,
+    "parents": [
+      {
+        "kind": "drive#fileLink",
+        "id": targetFolderId
+      }
+    ],
+    "mimeType": "application/vnd.google-apps.document"
+  }, originFileId, {"supportsTeamDrives": true}
+ );
+  return response; // get fileId of new file and other metadata from response body
+}
+
+// generalized version for both normal gdrive and teamdrive
+// defaults to normal gdrive, pass bTeam as true for teamdrive support
+function copyFile(originFileId, copyTitle, targetFolderId, bTeam = false) {
+  var response = Drive.Files.copy({
+    "title": copyTitle,
+    "parents": [
+      {
+        "kind": "drive#fileLink",
+        "id": targetFolderId
+      }
+    ],
+    "mimeType": "application/vnd.google-apps.document"
+  }, originFileId, {"supportsTeamDrives": bTeam}
+ );
+  return response; // get fileId of new file and other metadata from response body
+}
