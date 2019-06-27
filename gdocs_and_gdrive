@@ -1,0 +1,60 @@
+// concatenate google docs. Takes an array of doc Ids and appends all docs to the first in the array
+function mergeGoogleDocs(docIdsList) {
+    var baseDoc = DocumentApp.openById(docIdsList[0]);
+
+    var body = baseDoc.getActiveSection();
+
+    for (var i = 1; i < docIdsList.length; ++i) {
+        var otherBody = DocumentApp.openById(docIdsList[i]).getActiveSection();
+        var totalElements = otherBody.getNumChildren();
+        for (var j = 0; j < totalElements; ++j) {
+            var element = otherBody.getChild(j).copy();
+            var type = element.getType();
+            if (type == DocumentApp.ElementType.PARAGRAPH)
+                body.appendParagraph(element);
+            else if (type == DocumentApp.ElementType.TABLE)
+                body.appendTable(element);
+            else if (type == DocumentApp.ElementType.LIST_ITEM)
+                body.appendListItem(element);
+            else
+                throw new Error("Unknown element type: " + type);
+        }
+    }
+}
+
+// generate PDFs out of every file/GDoc in inFolder and put into outFolder if given, otherwise into source folder
+function generatePdfs(inFolderId, outFolderId) {
+    var infolder = DriveApp.getFolderById(inFolderId);
+    var fileList = infolder.getFiles();
+    var outfolder;
+
+    if (outFolderId) {
+        outfolder = DriveApp.getFolderById(outFolderId);
+    } else {
+        outfolder = infolder;
+    }
+
+    while (fileList.hasNext()) {
+        var file = fileList.next();
+        var pdfFile = DriveApp.createFile(file.getAs('application/pdf'));
+        outfolder.addFile(pdfFile);
+    }
+}
+
+
+// copying files on google drive... this one does not work on team drives, there is a second version below that does.
+// use our own function to make file copies, as apps script solution is utter sh**... (1.6s for one file!!!)
+function copyFile(originFileId, copyTitle, targetFolderId) {
+    var response = Drive.Files.copy({
+            "title": copyTitle,
+            "parents": [
+                {
+                    "kind": "drive#fileLink",
+                    "id": targetFolderId
+                }
+            ],
+            "mimeType": "application/vnd.google-apps.document"
+        }, originFileId
+    );
+    return response; // get fileId of new file and other metadata from response body
+}
